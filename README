@@ -1,0 +1,72 @@
+check_mem -- Local memory check module for Nagios-compatible systems
+
+Outputs current free memory in relation to total memory.
+Formatted for human-readability and performance data gathering.
+Optionally includes warning and critical state.
+
+Usage
+-----
+-w, --warning=VALUE: fixed number or percent representing low-point warning level
+-c, --critical=VALUE: fixed number of percent representing low-point critical level
+-h, --help: show this help; overrides all other settings
+
+Numeric values can be entered as regular numbers, percentages, or with commonly-accepted prefixes.
+Prefixed numbers work on a basis of 1 kilobyte = 1024 bytes
+
+Examples
+--------
+check_mem -w 20% -c 1048576
+- Outputs free memory, warning below 20% and critical below 1 megabyte;
+  either field accepts a percentage or a fixed number
+check_mem -w 20% -c 1MB
+- Same as previous, check_mem understands common prefixes from (k)ilo to (y)otta
+check_mem -w 20% -c 1mb
+- Same as previous; -w and -c are case-insensitive.
+
+Unpack the Tarball
+------------------
+tar xzf check_mem.tar.gz
+
+Install Instructions (assuming unpacked using previous tar command)
+--------------------
+cd check_mem
+make
+sudo make Install
+
+Uninstall Instructions
+----------------------
+sudo make Uninstall
+
+or,
+
+sudo rm -f /usr/local/nagios/libexec/check_mem
+
+Other Make Instructions
+-----------------------
+Delete compiled and linked files: make clean
+Create compressed tarball: make tar
+
+Current Release Tarball Download Location
+-----------------------------------------
+https://github.com/ejsiron/check_mem/releases
+
+Sample Nagios Command (commands.cfg)
+------------------------------------
+# 'check_local_memory' command definition
+define command{
+		command_name	check_local_memory
+		command_line	$USER1$/check_mem -w $ARG1$ -c $ARG2$
+}
+
+Sample Nagios Service (localhost.cfg)
+-------------------------------------
+# Define a service to check local memory usage
+# "perf-service" in this sample is a service template that sets process_perf_data to 1
+# if process_perf_data is not set, the performance data is ignored
+
+define service{
+	use					perf-service,local-service
+	host_name			localhost
+	service_description	Memory Usage
+	check_command		check_local_memory!15%!10%
+}
